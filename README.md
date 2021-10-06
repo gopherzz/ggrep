@@ -1,2 +1,2 @@
 # ggrep
-Go realization of *grep* tool
+Go implementation of *grep* tool
