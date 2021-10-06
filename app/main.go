@@ -15,15 +15,23 @@ var c_err color.Color = *color.New(color.BgRed).Add(color.FgWhite)
 var c_found color.Color = *color.New(color.FgGreen)
 var c_not_found color.Color = *color.New(color.FgYellow)
 
+var DELIMETER = strings.Repeat("─", 100)
+
 func findPattern(file *os.File, pattern string) bool {
 	fileReader := bufio.NewReader(file)
 	lines := 0
 	lineIdx := 0
+
 	for {
 		line, err := fileReader.ReadString('\n')
 		lineIdx++
+		if lineIdx == 1 {
+			fmt.Println(DELIMETER)
+		}
 		if strings.Contains(line, pattern) {
-			fmt.Printf("%s[%s]: %s", color.GreenString(file.Name()), color.GreenString(strconv.Itoa(lineIdx)), strings.ReplaceAll(line, pattern, color.New(color.Underline).Add(color.FgGreen).Sprintf("%s", pattern)))
+			founded := fmt.Sprintf("%s[%s]: %s", color.GreenString(file.Name()), color.GreenString(strconv.Itoa(lineIdx)), strings.ReplaceAll(line, pattern, color.New(color.Underline).Add(color.FgGreen).Sprintf("%s", pattern)))
+			fmt.Println(founded + DELIMETER)
+
 			lines++
 			continue
 		}
@@ -47,9 +55,11 @@ func main() {
 			c_err.DisableColor()
 			continue
 		}
+		color.Cyan(filename)
 		found := findPattern(file, pattern)
 		if !found {
-			c_not_found.Printf("File: %s Pattern Not Found!", filename)
+			c_not_found.Printf("File: %s Pattern Not Found!\n", filename)
+			fmt.Println(DELIMETER)
 		}
 	}
 }
