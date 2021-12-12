@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -41,13 +42,7 @@ func findPattern(file *os.File, pattern string) bool {
 	}
 }
 
-func main() {
-	if len(os.Args) < 3 {
-		fmt.Println(color.CyanString("Usage: "), color.HiGreenString("ggrep pattern filename1 filename2 filename3"))
-
-		return
-	}
-	pattern, filenames := os.Args[1], os.Args[2:]
+func find(pattern string, filenames []string) {
 	for _, filename := range filenames {
 		file, err := os.OpenFile(filename, os.O_RDONLY, os.ModePerm)
 		if err != nil {
@@ -61,5 +56,40 @@ func main() {
 			c_not_found.Printf("File: %s Pattern Not Found!\n", filename)
 			fmt.Println(DELIMETER)
 		}
+	}
+}
+
+func findInDir(pattern string, dirnames []string) {
+	for _, dirname := range dirnames {
+		files, err := ioutil.ReadDir(dirname)
+		if err != nil {
+			c_err.Println(err.Error())
+			c_err.DisableColor()
+			continue
+		}
+		for _, file := range files {
+			if file.IsDir() {
+				findInDir(pattern, []string{dirname + "/" + file.Name()})
+				continue
+			}
+			filePath := dirname + "/" + file.Name()
+			find(pattern, []string{filePath})
+		}
+	}
+
+}
+
+func main() {
+	if len(os.Args) < 3 {
+		fmt.Println(color.CyanString("Usage: "), color.HiGreenString("ggrep [d] pattern filename1 filename2 filename3"))
+		fmt.Println(color.CyanString("d"), color.HiGreenString(" - find in directories"))
+		return
+	}
+	isDir := os.Args[1] == "d"
+	if isDir {
+		findInDir(os.Args[2], os.Args[3:])
+		fmt.Println(isDir)
+	} else {
+		find(os.Args[1], os.Args[2:])
 	}
 }
